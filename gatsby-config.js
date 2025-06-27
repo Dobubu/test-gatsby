@@ -3,7 +3,10 @@
  */
 module.exports = {
   siteMetadata: {
-    title: `My Gatsby Site`,
+    title: `Using Gatsby Head`,
+    description: `Example project for the Gatsby Head API`,
+    twitterUsername: `@gatsbyjs`,
+    image: `/gatsby-icon.jpg`,
     siteUrl: `https://www.yourdomain.tld`,
   },
   plugins: [
