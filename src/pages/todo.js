@@ -1,33 +1,25 @@
-import React, { useState } from "react";
-import {
-  Input,
-  Checkbox,
-  Tabs,
-  Button,
-  Flex,
-  Tooltip,
-  ConfigProvider,
-  theme,
-} from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-import { red, green } from "@ant-design/colors";
+import React, { useState, useEffect } from "react";
+import { Tabs, Button, Flex, ConfigProvider, theme } from "antd";
+import { green } from "@ant-design/colors";
 
 import Layout from "../components/layout";
 import { Seo } from "../components/seo";
+import TodoInput from "../components/todo/TodoInput";
+import TodoItem from "../components/todo/TodoItem";
 
 const items = [
   {
-    key: "1",
+    key: "all",
     label: "全部",
     children: "Content of Tab Pane 1",
   },
   {
-    key: "2",
+    key: "completed",
     label: "完成",
     children: "Content of Tab Pane 2",
   },
   {
-    key: "3",
+    key: "uncompleted",
     label: "未完成",
     children: "Content of Tab Pane 3",
   },
@@ -49,14 +41,71 @@ const defaultTodoList = [
 ];
 
 function TodoPage() {
+  console.log("TodoPage re-render -------");
+
   const [isDark, setIsDark] = useState(false);
+  const [todoInput, setTodoInput] = useState("");
+  const [todoList, setTodoList] = useState(defaultTodoList);
+  const [filteredTodos, setFilteredTodos] = useState(todoList);
+  const [currentTab, setCurrentTab] = useState("all");
+
+  // 當 todoList 或 currentTab 變化時，更新 filteredTodos
+  useEffect(() => {
+    const getFilteredTodos = () => {
+      switch (currentTab) {
+        case "completed":
+          return todoList.filter((todo) => todo.completed);
+        case "uncompleted":
+          return todoList.filter((todo) => !todo.completed);
+        default:
+          return todoList;
+      }
+    };
+
+    setFilteredTodos(getFilteredTodos());
+  }, [todoList, currentTab]);
 
   const onChangeTab = (key) => {
     console.log(key);
+    setCurrentTab(key);
   };
 
-  const onChangeCheckBox = (e) => {
-    console.log(`checked = ${e.target.checked}`);
+  const onChangeCheckBox = (e, index) => {
+    console.log("index: ", index);
+    console.log("e: ", e);
+
+    // 根據過濾後的索引找到原始 todoList 中的實際索引
+    const originalIndex = todoList.findIndex(
+      (item) => item === filteredTodos[index]
+    );
+    if (originalIndex !== -1) {
+      const newTodoList = [...todoList];
+      newTodoList[originalIndex].completed = e.target.checked;
+      setTodoList(newTodoList);
+    }
+  };
+
+  const handleAddTodo = () => {
+    if (todoInput.trim() === "") return;
+
+    const newTodo = {
+      title: todoInput,
+      completed: false,
+    };
+
+    setTodoList([...todoList, newTodo]);
+    setTodoInput(""); // 清空輸入框
+  };
+
+  const handleDeleteTodo = (index) => {
+    // 根據過濾後的索引找到原始 todoList 中的實際索引
+    const originalIndex = todoList.findIndex(
+      (item) => item === filteredTodos[index]
+    );
+    if (originalIndex !== -1) {
+      const newTodoList = todoList.filter((_, i) => i !== originalIndex);
+      setTodoList(newTodoList);
+    }
   };
 
   return (
@@ -79,38 +128,25 @@ function TodoPage() {
         </Flex>
 
         <Flex gap="middle" style={{ marginBottom: 16 }}>
-          <Input placeholder="輸入待辦事項..." />
-          <Button type="primary">新增</Button>
+          <TodoInput value={todoInput} onChange={setTodoInput} />
+          <Button type="primary" onClick={handleAddTodo}>
+            新增
+          </Button>
         </Flex>
       </ConfigProvider>
 
       <hr />
-      <Tabs defaultActiveKey="1" items={items} onChange={onChangeTab} />
+      <Tabs defaultActiveKey="all" items={items} onChange={onChangeTab} />
 
       <Flex gap="middle" wrap>
-        {defaultTodoList.map((todo) => (
-          <Flex
-            align="center"
-            justify="space-between"
-            key={Math.random()}
-            style={{ width: "100%" }}
-          >
-            <Checkbox onChange={onChangeCheckBox} checked={todo.completed}>
-              {todo.title}
-            </Checkbox>
-
-            <Flex style={{ marginLeft: "auto" }} align="center" gap="middle">
-              <span style={{ fontSize: 12 }}>剩餘: 5小時</span>
-              <Tooltip title="Delete">
-                <Button
-                  type="primary"
-                  shape="circle"
-                  style={{ background: red[3] }}
-                  icon={<DeleteOutlined />}
-                />
-              </Tooltip>
-            </Flex>
-          </Flex>
+        {filteredTodos.map((todo, index) => (
+          <TodoItem
+            key={index}
+            index={index}
+            todo={todo}
+            onChangeCheckBox={onChangeCheckBox}
+            onDeleteTodo={handleDeleteTodo}
+          ></TodoItem>
         ))}
       </Flex>
     </Layout>

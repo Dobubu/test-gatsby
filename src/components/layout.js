@@ -10,6 +10,8 @@ import {
 } from "./layout.module.css";
 
 const Layout = ({ pageTitle, children }) => {
+  console.log("Layout re-render");
+
   const data = useStaticQuery(graphql`
     query {
       site {
@@ -19,7 +21,7 @@ const Layout = ({ pageTitle, children }) => {
       }
     }
   `);
-  console.log("data: ", data);
+  // console.log("data: ", data);
 
   return (
     <div className={container}>
