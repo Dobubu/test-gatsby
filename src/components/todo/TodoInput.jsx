@@ -1,54 +1,43 @@
-import React, {
-  useRef,
-  useState,
-  useImperativeHandle,
-  forwardRef,
-} from "react";
-import { Input } from "antd";
+import React, { memo } from "react";
+import { Form, Input, Button } from "antd";
 
-// 我們在此處使用 forwardRef 來向外暴露方法
-const TodoInput = forwardRef(function TodoInput({ onChange }, ref) {
-  // 使用內部狀態來管理輸入值
-  const [inputValue, setInputValue] = useState("");
-  console.log("Input re-render");
-  const inputRef = useRef(null);
+const TodoInput = ({ onAdd }) => {
+  console.log("TodoInput re-render");
 
-  // 暴露給父組件的方法
-  useImperativeHandle(ref, () => ({
-    getValue: () => {
-      return inputValue;
-    },
-    setValue: (value) => {
-      setInputValue(value);
-    },
-    clear: () => {
-      setInputValue("");
-    },
-    focus: () => {
-      inputRef.current?.focus();
-    },
-  }));
+  const [form] = Form.useForm();
 
-  // 處理輸入變化
-  function handleChange(e) {
-    setInputValue(e.target.value);
-  }
+  const onFinish = (values) => {
+    console.log("Success:", values);
+    onAdd(values.todo);
+    form.resetFields();
+  };
 
-  // 處理按下 Enter 鍵時的提交
-  function handlePressEnter() {
-    onChange(inputValue);
-  }
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+  };
 
   return (
-    <Input
-      ref={inputRef}
-      placeholder="輸入待辦事項..."
-      aria-label="待辦事項輸入"
-      value={inputValue}
-      onChange={handleChange}
-      onPressEnter={handlePressEnter}
-    />
+    <Form
+      form={form}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      data-testid="todo-form"
+    >
+      <Form.Item
+        name="todo"
+        rules={[{ required: true, message: "請輸入待辦事項" }]}
+      >
+        <Input
+          placeholder="輸入待辦事項..."
+          aria-label="待辦事項輸入"
+          data-testid="todo-input"
+        />
+      </Form.Item>
+      <Button type="primary" htmlType="submit" data-testid="add-button">
+        新增
+      </Button>
+    </Form>
   );
-});
+};
 
-export default TodoInput;
+export default memo(TodoInput);
