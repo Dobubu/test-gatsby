@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Tabs, Button, Flex, ConfigProvider, theme } from "antd";
 import { green } from "@ant-design/colors";
 
@@ -27,14 +27,17 @@ const items = [
 
 const defaultTodoList = [
   {
+    id: 1,
     title: "Learn Gatsby",
     completed: true,
   },
   {
+    id: 2,
     title: "Build a website",
     completed: false,
   },
   {
+    id: 3,
     title: "Deploy the website",
     completed: false,
   },
@@ -45,23 +48,17 @@ function TodoPage() {
 
   const [isDark, setIsDark] = useState(false);
   const [todoList, setTodoList] = useState(defaultTodoList);
-  const [filteredTodos, setFilteredTodos] = useState(todoList);
   const [currentTab, setCurrentTab] = useState("all");
 
-  // 當 todoList 或 currentTab 變化時，更新 filteredTodos
-  useEffect(() => {
-    const getFilteredTodos = () => {
-      switch (currentTab) {
-        case "completed":
-          return todoList.filter((todo) => todo.completed);
-        case "uncompleted":
-          return todoList.filter((todo) => !todo.completed);
-        default:
-          return todoList;
-      }
-    };
-
-    setFilteredTodos(getFilteredTodos());
+  const filteredTodos = useMemo(() => {
+    switch (currentTab) {
+      case "completed":
+        return todoList.filter((todo) => todo.completed);
+      case "uncompleted":
+        return todoList.filter((todo) => !todo.completed);
+      default:
+        return todoList;
+    }
   }, [todoList, currentTab]);
 
   const onChangeTab = (key) => {
@@ -69,19 +66,15 @@ function TodoPage() {
     setCurrentTab(key);
   };
 
-  const onChangeCheckBox = (e, index) => {
-    console.log("index: ", index);
-    console.log("e: ", e);
+  const onChangeCheckBox = (e, id) => {
+    const checked = e.target.checked;
 
-    // 根據過濾後的索引找到原始 todoList 中的實際索引
-    const originalIndex = todoList.findIndex(
-      (item) => item === filteredTodos[index]
-    );
-    if (originalIndex !== -1) {
-      const newTodoList = [...todoList];
-      newTodoList[originalIndex].completed = e.target.checked;
-      setTodoList(newTodoList);
-    }
+    setTodoList((prevTodoList) => {
+      const newTodoList = prevTodoList.map((todo, i) =>
+        todo.id === id ? { ...todo, completed: checked } : todo
+      );
+      return newTodoList;
+    });
   };
 
   const handleAddTodo = useCallback((todoValue) => {
@@ -95,15 +88,22 @@ function TodoPage() {
     setTodoList((prevTodoList) => [...prevTodoList, newTodo]);
   }, []);
 
-  const handleDeleteTodo = (index) => {
-    // 根據過濾後的索引找到原始 todoList 中的實際索引
-    const originalIndex = todoList.findIndex(
-      (item) => item === filteredTodos[index]
+  const handleDeleteTodo = (id) => {
+    setTodoList((prevTodoList) =>
+      prevTodoList.filter((todo) => todo.id !== id)
     );
-    if (originalIndex !== -1) {
-      const newTodoList = todoList.filter((_, i) => i !== originalIndex);
-      setTodoList(newTodoList);
-    }
+  };
+
+  const todoItemsList = () => {
+    return filteredTodos.map((todo, index) => (
+      <TodoItem
+        key={todo.id}
+        index={index}
+        todo={todo}
+        onChangeCheckBox={onChangeCheckBox}
+        onDeleteTodo={handleDeleteTodo}
+      />
+    ));
   };
 
   return (
@@ -134,15 +134,7 @@ function TodoPage() {
       <Tabs defaultActiveKey="all" items={items} onChange={onChangeTab} />
 
       <Flex gap="middle" wrap>
-        {filteredTodos.map((todo, index) => (
-          <TodoItem
-            key={index}
-            index={index}
-            todo={todo}
-            onChangeCheckBox={onChangeCheckBox}
-            onDeleteTodo={handleDeleteTodo}
-          ></TodoItem>
-        ))}
+        {todoItemsList()}
       </Flex>
     </Layout>
   );

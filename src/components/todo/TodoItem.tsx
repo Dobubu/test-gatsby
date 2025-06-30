@@ -1,20 +1,15 @@
-import React from "react";
+import React, { memo } from "react";
 import { Checkbox, Button, Flex, Tooltip } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { red } from "@ant-design/colors";
 
-export default function TodoItem({
-  index,
-  todo,
-  onChangeCheckBox,
-  onDeleteTodo,
-}) {
-  console.log("TodoItem re-render, ", todo.title);
+const TodoItem = ({ index, todo, onChangeCheckBox, onDeleteTodo }) => {
+  console.log("TodoItem re-render, ", todo.title, index);
 
   return (
     <Flex align="center" justify="space-between" style={{ width: "100%" }}>
       <Checkbox
-        onChange={(e) => onChangeCheckBox(e, index)}
+        onChange={(e) => onChangeCheckBox(e, todo.id)}
         checked={todo.completed}
       >
         {todo.title}
@@ -28,10 +23,19 @@ export default function TodoItem({
             shape="circle"
             style={{ background: red[3] }}
             icon={<DeleteOutlined />}
-            onClick={() => onDeleteTodo(index)}
+            onClick={() => onDeleteTodo(todo.id)}
           />
         </Tooltip>
       </Flex>
     </Flex>
   );
-}
+};
+
+const arePropsEqual = (prevProps, nextProps) => {
+  return (
+    prevProps.todo.title === nextProps.todo.title &&
+    prevProps.todo.completed === nextProps.todo.completed
+  );
+};
+
+export default memo(TodoItem, arePropsEqual);
