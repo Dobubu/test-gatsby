@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Tabs, Button, Flex, ConfigProvider, theme } from "antd";
 import { green } from "@ant-design/colors";
 
@@ -43,8 +43,8 @@ const defaultTodoList = [
 function TodoPage() {
   console.log("TodoPage re-render -------");
 
+  const todoInputRef = useRef(null);
   const [isDark, setIsDark] = useState(false);
-  const [todoInput, setTodoInput] = useState("");
   const [todoList, setTodoList] = useState(defaultTodoList);
   const [filteredTodos, setFilteredTodos] = useState(todoList);
   const [currentTab, setCurrentTab] = useState("all");
@@ -86,6 +86,10 @@ function TodoPage() {
   };
 
   const handleAddTodo = () => {
+    // 使用 ref 獲取輸入值
+    const todoInput = todoInputRef.current?.getValue() || "";
+    console.log("todoInput: ", todoInput);
+
     if (todoInput.trim() === "") return;
 
     const newTodo = {
@@ -94,7 +98,24 @@ function TodoPage() {
     };
 
     setTodoList([...todoList, newTodo]);
-    setTodoInput(""); // 清空輸入框
+
+    // 清空輸入框
+    todoInputRef.current?.clear();
+    // 聚焦回輸入框
+    todoInputRef.current?.focus();
+  };
+
+  const handleInputChange = (value) => {
+    // 這裡只在按下 Enter 時會被呼叫
+    if (value && value.trim() !== "") {
+      const newTodo = {
+        title: value,
+        completed: false,
+      };
+
+      setTodoList([...todoList, newTodo]);
+      todoInputRef.current?.clear();
+    }
   };
 
   const handleDeleteTodo = (index) => {
@@ -128,7 +149,7 @@ function TodoPage() {
         </Flex>
 
         <Flex gap="middle" style={{ marginBottom: 16 }}>
-          <TodoInput value={todoInput} onChange={setTodoInput} />
+          <TodoInput ref={todoInputRef} onChange={handleInputChange} />
           <Button type="primary" onClick={handleAddTodo}>
             新增
           </Button>
