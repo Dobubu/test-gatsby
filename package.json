@@ -19,6 +19,7 @@
     "@mdx-js/react": "^2.3.0",
     "antd": "^5.26.2",
     "babel-plugin-styled-components": "^2.1.4",
+    "dayjs": "^1.11.13",
     "gatsby": "^5.14.1",
     "gatsby-plugin-image": "^3.14.0",
     "gatsby-plugin-mdx": "^5.14.1",

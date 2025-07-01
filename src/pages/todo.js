@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Tabs, Button, Flex } from "antd";
 import { green } from "@ant-design/colors";
 
@@ -32,16 +32,19 @@ const defaultTodoList = [
     id: 1,
     title: "Learn Gatsby",
     completed: true,
+    created: "2025-06-29",
   },
   {
     id: 2,
     title: "Build a website",
     completed: false,
+    created: "2025-06-02",
   },
   {
     id: 3,
     title: "Deploy the website",
     completed: false,
+    created: "2025-05-03",
   },
 ];
 
@@ -66,6 +69,28 @@ function TodoPage() {
     console.log(key);
     setCurrentTab(key);
   };
+
+  const [sortState, setSortState] = useState("newest");
+
+  const handleSortTodos = () => {
+    setSortState((prevState) => (prevState === "newest" ? "oldest" : "newest"));
+  };
+
+  useEffect(() => {
+    if (sortState === "newest") {
+      setTodoList((prevTodoList) =>
+        [...prevTodoList].sort(
+          (a, b) => new Date(b.created) - new Date(a.created)
+        )
+      );
+    } else {
+      setTodoList((prevTodoList) =>
+        [...prevTodoList].sort(
+          (a, b) => new Date(a.created) - new Date(b.created)
+        )
+      );
+    }
+  }, [sortState]);
 
   const onChangeCheckBox = (e, id) => {
     const checked = e.target.checked;
@@ -112,8 +137,12 @@ function TodoPage() {
       <ThemeProvider>
         <Flex gap="middle" style={{ marginBottom: 16 }}>
           <ThemeToggleButton />
-          <Button type="primary" style={{ background: green[6] }}>
-            排序：新到舊
+          <Button
+            type="primary"
+            style={{ background: green[6] }}
+            onClick={handleSortTodos}
+          >
+            排序：{sortState === "newest" ? "新到舊" : "舊到新"}
           </Button>
         </Flex>
 
