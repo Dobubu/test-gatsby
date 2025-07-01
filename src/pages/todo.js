@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { Tabs, Button, Flex, ConfigProvider, theme } from "antd";
+import { Tabs, Button, Flex } from "antd";
 import { green } from "@ant-design/colors";
 
 import Layout from "../components/layout";
 import { Seo } from "../components/seo";
 import TodoInput from "../components/todo/TodoInput";
 import TodoItem from "../components/todo/TodoItem";
+import ThemeToggleButton from "../components/todo/ThemeToggleButton";
+import { ThemeProvider } from "../context/ThemeContext";
 
 const items = [
   {
@@ -46,7 +48,6 @@ const defaultTodoList = [
 function TodoPage() {
   console.log("TodoPage re-render -------");
 
-  const [isDark, setIsDark] = useState(false);
   const [todoList, setTodoList] = useState(defaultTodoList);
   const [currentTab, setCurrentTab] = useState("all");
 
@@ -108,18 +109,9 @@ function TodoPage() {
 
   return (
     <Layout pageTitle="My Todo">
-      <ConfigProvider
-        theme={{
-          algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        }}
-      >
+      <ThemeProvider>
         <Flex gap="middle" style={{ marginBottom: 16 }}>
-          <Button
-            onClick={() => setIsDark(!isDark)}
-            style={{ marginLeft: "auto" }}
-          >
-            切換 {isDark ? "Light" : "Dark"} 模式
-          </Button>
+          <ThemeToggleButton />
           <Button type="primary" style={{ background: green[6] }}>
             排序：新到舊
           </Button>
@@ -128,7 +120,7 @@ function TodoPage() {
         <Flex gap="middle" style={{ marginBottom: 16 }}>
           <TodoInput onAdd={handleAddTodo} />
         </Flex>
-      </ConfigProvider>
+      </ThemeProvider>
 
       <hr />
       <Tabs defaultActiveKey="all" items={items} onChange={onChangeTab} />
