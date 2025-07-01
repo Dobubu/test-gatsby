@@ -32,13 +32,13 @@ const defaultTodoList = [
     id: 1,
     title: "Learn Gatsby",
     completed: true,
-    created: "2025-06-29",
+    created: "2025-06-02",
   },
   {
     id: 2,
     title: "Build a website",
     completed: false,
-    created: "2025-06-02",
+    created: "2025-06-29",
   },
   {
     id: 3,
@@ -72,25 +72,29 @@ function TodoPage() {
 
   const [sortState, setSortState] = useState("newest");
 
-  const handleSortTodos = () => {
-    setSortState((prevState) => (prevState === "newest" ? "oldest" : "newest"));
+  const sortedTodoList = () => {
+    setTodoList((prevTodoList) =>
+      [...prevTodoList].sort((a, b) =>
+        sortState === "newest"
+          ? new Date(b.created) - new Date(a.created)
+          : new Date(a.created) - new Date(b.created)
+      )
+    );
   };
 
   useEffect(() => {
-    if (sortState === "newest") {
-      setTodoList((prevTodoList) =>
-        [...prevTodoList].sort(
-          (a, b) => new Date(b.created) - new Date(a.created)
-        )
-      );
-    } else {
-      setTodoList((prevTodoList) =>
-        [...prevTodoList].sort(
-          (a, b) => new Date(a.created) - new Date(b.created)
-        )
-      );
-    }
-  }, [sortState]);
+    sortedTodoList();
+  }, []);
+
+  const handleSortTodos = () => {
+    setSortState((prevState) => {
+      const newSortState = prevState === "newest" ? "oldest" : "newest";
+      console.log("newSortState: ", newSortState);
+
+      sortedTodoList();
+      return newSortState;
+    });
+  };
 
   const onChangeCheckBox = (e, id) => {
     const checked = e.target.checked;

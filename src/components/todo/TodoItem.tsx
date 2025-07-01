@@ -24,7 +24,7 @@ const TodoItem = ({ index, todo, onChangeCheckBox, onDeleteTodo }) => {
       </Checkbox>
 
       <Flex style={{ marginLeft: "auto" }} align="center" gap="middle">
-        <Flex vertical>
+        <Flex vertical align="flex-end">
           <span style={{ fontSize: 12 }}>
             {formatTimeAgo(todo.created)} 建立
           </span>
