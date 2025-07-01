@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Tabs, Button, Flex } from "antd";
 import { green } from "@ant-design/colors";
 
@@ -70,30 +70,19 @@ function TodoPage() {
     setCurrentTab(key);
   };
 
-  const [sortState, setSortState] = useState("newest");
+  const [sortState, setSortState] = useState("newest"); // oldest or newest
 
-  const sortedTodoList = () => {
-    setTodoList((prevTodoList) =>
-      [...prevTodoList].sort((a, b) =>
-        sortState === "newest"
-          ? new Date(b.created) - new Date(a.created)
-          : new Date(a.created) - new Date(b.created)
-      )
-    );
-  };
+  const sortedAndFilteredTodos = useMemo(() => {
+    return [...filteredTodos].sort((a, b) => {
+      const dataA = new Date(a.created);
+      const dataB = new Date(b.created);
 
-  useEffect(() => {
-    sortedTodoList();
-  }, []);
+      return sortState === "newest" ? dataB - dataA : dataA - dataB;
+    });
+  }, [filteredTodos, sortState]);
 
   const handleSortTodos = () => {
-    setSortState((prevState) => {
-      const newSortState = prevState === "newest" ? "oldest" : "newest";
-      console.log("newSortState: ", newSortState);
-
-      sortedTodoList();
-      return newSortState;
-    });
+    setSortState((prevState) => (prevState === "newest" ? "oldest" : "newest"));
   };
 
   const onChangeCheckBox = (e, id) => {
@@ -125,7 +114,7 @@ function TodoPage() {
   };
 
   const todoItemsList = () => {
-    return filteredTodos.map((todo, index) => (
+    return sortedAndFilteredTodos.map((todo, index) => (
       <TodoItem
         key={todo.id}
         index={index}
